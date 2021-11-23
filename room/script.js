@@ -13,6 +13,9 @@ const Peer = window.Peer;
   const meta = document.getElementById('js-meta');
   const sdkSrc = document.querySelector('script[src*=skyway]');
 
+  // 会議スタートボタン
+  const startMeeting = document.getElementById('meeting-start');
+
   meta.innerText = `
     UA: ${navigator.userAgent}
     SDK: ${sdkSrc ? sdkSrc.src : 'unknown'}
@@ -28,7 +31,7 @@ const Peer = window.Peer;
 
   const localStream = await navigator.mediaDevices
     .getUserMedia({
-      audio: true,
+      audio: false, //音声ミュート中
       video: true,
     })
     .catch(console.error);
@@ -78,7 +81,20 @@ const Peer = window.Peer;
 
     room.on('data', ({ data, src }) => {
       // Show a message sent to the room and who sent
-      messages.textContent += `${src}: ${data}\n`;
+      if(data == 'test') {
+        startMeeting.style.display = "none";
+        messages.textContent += 'Start Meeting.\n';
+      }else if(data == 'preBreak') {
+        messages.textContent += 'After 3sec, Go Break.\n';
+      }else if(data == 'Break') {
+        localStream.getVideoTracks().forEach((track) => (track.enabled = false));
+        messages.textContent += 'Break.\n';
+      }else if(data == 'Restart') {
+        localStream.getVideoTracks().forEach((track) => (track.enabled = true));
+        messages.textContent += 'Restart Meeting.\n';
+      }else {
+        messages.textContent += `${src}: ${data}\n`;
+      }
     });
 
     // for closing room members
@@ -107,6 +123,8 @@ const Peer = window.Peer;
     sendTrigger.addEventListener('click', onClickSend);
     leaveTrigger.addEventListener('click', () => room.close(), { once: true });
 
+    startMeeting.addEventListener('click', onMeeting);
+
     function onClickSend() {
       // Send message to all of the peers in the room via websocket
       room.send(localText.value);
@@ -114,6 +132,40 @@ const Peer = window.Peer;
       messages.textContent += `${peer.id}: ${localText.value}\n`;
       localText.value = '';
     }
+
+    // 会議タイマースタート関数
+    function onMeeting() {
+      startMeeting.style.display = "none";
+      room.send('test');
+      messages.textContent += 'Start Meeting.\n';
+      setTimeout(preBreak, 3000);
+    }
+
+    //休憩前関数
+    function preBreak() {
+      room.send('preBreak');
+      messages.textContent += 'After 3sec, Go Break.\n';
+      setTimeout(Break, 3000);
+    }
+
+    function Break() {
+      room.send('Break');
+      messages.textContent += 'Break.\n';
+
+      localStream.getVideoTracks().forEach((track) => (track.enabled = false));
+
+      setTimeout(Restart, 3000);
+    }
+
+    function Restart() {
+      room.send('Restart');
+      messages.textContent += 'Restart Meeting.\n';
+
+      localStream.getVideoTracks().forEach((track) => (track.enabled = true));
+
+      setTimeout(onMeeting, 3000);
+    }
+
   });
 
   peer.on('error', console.error);
