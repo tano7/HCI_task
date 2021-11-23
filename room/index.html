@@ -9,18 +9,22 @@
   <body>
     <div class="container">
       <h1 class="heading">Forced Break Meeting</h1>
-      <p class="note">
+      <!-- <p class="note">
         Change Room mode (before join in a room):
         <a href="#">mesh</a> / <a href="#sfu">sfu</a>
-      </p>
+      </p> -->
       <div class="room">
         <div>
+          <span class="Break-alart" id="break-alart" display="none">Go Break!<br> Have a good coffee.</span>
           <video id="js-local-stream"></video>
           <span id="js-room-mode"></span>:
           <input type="text" placeholder="Room Name" id="js-room-id">
           <button id="js-join-trigger">Join</button>
 
-          <!-- 会議スタートボタン -->
+          <span id ="MST">Meeting Sprint Time(min):</span>
+          <input type="number" id="meeting-time" value = 45><br>
+          <span id ="BST">Break Sprint Time(min):</span>
+          <input type="number" id="break-time" value = 15>
           <button id="meeting-start">Start Meeting</button>
 
           <button id="js-leave-trigger">Leave</button>

@@ -15,6 +15,14 @@ const Peer = window.Peer;
 
   // 会議スタートボタン
   const startMeeting = document.getElementById('meeting-start');
+  const BreakAlart = document.getElementById('break-alart');
+  const meetingTime = document.getElementById('meeting-time');
+  const breakTime = document.getElementById('break-time');
+
+  BreakAlart.style.display = "none";
+
+  let time_tmp;
+  let break_time_tmp;
 
   meta.innerText = `
     UA: ${navigator.userAgent}
@@ -31,7 +39,7 @@ const Peer = window.Peer;
 
   const localStream = await navigator.mediaDevices
     .getUserMedia({
-      audio: false, //音声ミュート中
+      audio: true, //音声ミュート中
       video: true,
     })
     .catch(console.error);
@@ -65,7 +73,8 @@ const Peer = window.Peer;
       messages.textContent += '=== You joined ===\n';
     });
     room.on('peerJoin', peerId => {
-      messages.textContent += `=== ${peerId} joined ===\n`;
+      // messages.textContent += `=== ${peerId} joined ===\n`;
+      messages.textContent += `=== Your colleague joined ===\n`;
     });
 
     // Render remote stream for new peer join in the room
@@ -135,26 +144,33 @@ const Peer = window.Peer;
 
     // 会議タイマースタート関数
     function onMeeting() {
+      time_tmp = meetingTime.value * 60 * 1000;
+      break_time_tmp = breakTime.value * 60 * 1000;
+      meetingTime.style.display = "none";
+      breakTime.style.display = "none";
       startMeeting.style.display = "none";
+      document.getElementById('MST').style.display = "none";
+      document.getElementById('BST').style.display = "none";
       room.send('test');
       messages.textContent += 'Start Meeting.\n';
-      setTimeout(preBreak, 3000);
+      setTimeout(preBreak, time_tmp - 30000);
     }
 
     //休憩前関数
     function preBreak() {
       room.send('preBreak');
-      messages.textContent += 'After 3sec, Go Break.\n';
+      messages.textContent += 'After 30 sec, Go Break.\n';
       setTimeout(Break, 3000);
     }
 
     function Break() {
       room.send('Break');
       messages.textContent += 'Break.\n';
-
       localStream.getVideoTracks().forEach((track) => (track.enabled = false));
+      localStream.getAudioTracks().forEach((track) => (track.enabled = false));
+      BreakAlart.style.display = "block";
 
-      setTimeout(Restart, 3000);
+      setTimeout(Restart, break_time_tmp);
     }
 
     function Restart() {
@@ -162,8 +178,10 @@ const Peer = window.Peer;
       messages.textContent += 'Restart Meeting.\n';
 
       localStream.getVideoTracks().forEach((track) => (track.enabled = true));
+      localStream.getAudioTracks().forEach((track) => (track.enabled = true));
+      BreakAlart.style.display = "none";
 
-      setTimeout(onMeeting, 3000);
+      setTimeout(preBreak, time_tmp - 30000);
     }
 
   });
