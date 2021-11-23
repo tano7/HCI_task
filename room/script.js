@@ -91,15 +91,21 @@ const Peer = window.Peer;
     room.on('data', ({ data, src }) => {
       // Show a message sent to the room and who sent
       if(data == 'test') {
+        meetingTime.style.display = "none";
+        breakTime.style.display = "none";
         startMeeting.style.display = "none";
+        document.getElementById('MST').style.display = "none";
+        document.getElementById('BST').style.display = "none";
         messages.textContent += 'Start Meeting.\n';
       }else if(data == 'preBreak') {
-        messages.textContent += 'After 3sec, Go Break.\n';
+        messages.textContent += 'After 30sec, Go Break.\n';
       }else if(data == 'Break') {
         localStream.getVideoTracks().forEach((track) => (track.enabled = false));
+        localStream.getAudioTracks().forEach((track) => (track.enabled = false));
         messages.textContent += 'Break.\n';
       }else if(data == 'Restart') {
         localStream.getVideoTracks().forEach((track) => (track.enabled = true));
+        localStream.getAudioTracks().forEach((track) => (track.enabled = true));
         messages.textContent += 'Restart Meeting.\n';
       }else {
         messages.textContent += `${src}: ${data}\n`;
