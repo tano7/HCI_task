@@ -90,7 +90,7 @@ const Peer = window.Peer;
 
     room.on('data', ({ data, src }) => {
       // Show a message sent to the room and who sent
-      if(data == 'test') {
+      if(data == 'startMeeting') {
         meetingTime.style.display = "none";
         breakTime.style.display = "none";
         startMeeting.style.display = "none";
@@ -98,7 +98,9 @@ const Peer = window.Peer;
         document.getElementById('BST').style.display = "none";
         messages.textContent += 'Start Meeting.\n';
       }else if(data == 'preBreak') {
-        messages.textContent += 'After 30sec, Go Break.\n';
+        messages.textContent += 'After 5min, Go Break.\n';
+      }else if(data == 'preBreak-in5min') {
+        messages.textContent += 'in 5min, Go Break.\n';
       }else if(data == 'Break') {
         localStream.getVideoTracks().forEach((track) => (track.enabled = false));
         localStream.getAudioTracks().forEach((track) => (track.enabled = false));
@@ -108,7 +110,8 @@ const Peer = window.Peer;
         localStream.getAudioTracks().forEach((track) => (track.enabled = true));
         messages.textContent += 'Restart Meeting.\n';
       }else {
-        messages.textContent += `${src}: ${data}\n`;
+        // messages.textContent += `${src}: ${data}\n`;
+        messages.textContent += `${data}\n`;
       }
     });
 
@@ -144,7 +147,8 @@ const Peer = window.Peer;
       // Send message to all of the peers in the room via websocket
       room.send(localText.value);
 
-      messages.textContent += `${peer.id}: ${localText.value}\n`;
+      // messages.textContent += `${peer.id}: ${localText.value}\n`;
+      messages.textContent += `${localText.value}\n`;
       localText.value = '';
     }
 
@@ -157,16 +161,22 @@ const Peer = window.Peer;
       startMeeting.style.display = "none";
       document.getElementById('MST').style.display = "none";
       document.getElementById('BST').style.display = "none";
-      room.send('test');
       messages.textContent += 'Start Meeting.\n';
-      setTimeout(preBreak, time_tmp - 30000);
+      if(time_tmp > 300000) {
+        room.send('startMeeting');
+        setTimeout(preBreak, time_tmp - 300000);
+      }else {
+        room.send('preBreak-in5min');
+        messages.textContent += 'in 5min, Go Break.\n';
+        setTimeout(Break, time_tmp);
+      }
     }
 
     //休憩前関数
     function preBreak() {
       room.send('preBreak');
-      messages.textContent += 'After 30 sec, Go Break.\n';
-      setTimeout(Break, 3000);
+      messages.textContent += 'After 5min, Go Break.\n';
+      setTimeout(Break, 300000);
     }
 
     function Break() {
