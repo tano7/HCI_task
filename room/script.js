@@ -98,6 +98,11 @@ const Peer = window.Peer;
         document.getElementById('BST').style.display = "none";
         messages.textContent += 'Start Meeting.\n';
       }else if(data == 'preBreak') {
+        meetingTime.style.display = "none";
+        breakTime.style.display = "none";
+        startMeeting.style.display = "none";
+        document.getElementById('MST').style.display = "none";
+        document.getElementById('BST').style.display = "none";
         messages.textContent += 'After 5min, Go Break.\n';
       }else if(data == 'preBreak-in5min') {
         messages.textContent += 'in 5min, Go Break.\n';
